@@ -18,7 +18,7 @@ void str_echo(int connFd){
 
 }
 
-int main() {
+int main(int argc, char **argv) {
     int listenFd, connFd;
     pid_t childPid;
     socklen_t cliLen;
