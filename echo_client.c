@@ -22,16 +22,18 @@ int main(int argc, char **argv){
         err_quit("argc != 2");
     }
 
-    socketFd = soket(AF_INET, SOCK_STREAM, 0);
+    socketFd = socket(AF_INET, SOCK_STREAM, 0);
 
     bzero(&servAddr, sizeof(servAddr));
     servAddr.sin_family = AF_INET;
-    servAddr.sin_port = htons();
+    servAddr.sin_port = htons(SERV_PORT);
     inet_pton(AF_INET, argv[1], &servAddr.sin_addr);
 
-    connect(socketFd, (const sockaddr*) &servAddr, sizeof(servAddr));
+    connect(socketFd, (SA *) &servAddr, sizeof(servAddr));
 
     str_cli(stdin, socketFd);
 
     exit(0);
 }
+
+// gcc -o echo_client echo_client.c -lunp
