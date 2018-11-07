@@ -1,5 +1,7 @@
 // #include <sys/types.h>
 #include "unp.h"
+#include <stdio.h>
+#include <time.h> 
 
 void sig_chld(int signo) {
     pid_t pid;
@@ -11,8 +13,22 @@ void sig_chld(int signo) {
     }
 }
 
+void str_echo(int connectfd) {
+    time_t now;
+    struct tm *tm_now;
+    char *datetime;
+     
+    time(&now);
+    tm_now = localtime(&now);
+    datetime = asctime(tm_now);
+     
+    printf("now datetime: %s\n", datetime);
+     
+    return ; 
+}
 
 int main(int argc, char *argv[]) {
+    // str_echo(1);
     int listenfd, connectfd;
     size_t cliLen;
     struct sockaddr_in cliAddr, servAddr;
