@@ -2,7 +2,7 @@
 // #include<unistd.h> 
 
 void str_cli(FILE* stdin, int socketFd){
-    printf("???\n");
+    // printf("???\n");
     printf("%d\n", socketFd);
 }
 
@@ -27,12 +27,12 @@ int main(int argc, char **argv){
     bzero(&servAddr, sizeof(servAddr));
     servAddr.sin_family = AF_INET;
     servAddr.sin_port = htons(SERV_PORT);
-    printf("emm\n");
-    printf("%s\n", argv[1]);
-    inet_pton(AF_INET, argv[1], &servAddr.sin_addr);
-    printf("5\n");
+    // printf("emm\n");
+    // printf("%s\n", argv[0]);
+    inet_pton(AF_INET, argv[0], &servAddr.sin_addr);
+    // printf("5\n");
     connect(socketFd, (SA *) &servAddr, sizeof(servAddr));
-    printf("single\n");
+    // printf("single\n");
     str_cli(stdin, socketFd);
     
 
