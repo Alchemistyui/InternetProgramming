@@ -30,10 +30,12 @@ void str_echo(int connectfd) {
 int main(int argc, char *argv[]) {
     // str_echo(1);
     int listenfd, connectfd;
-    size_t cliLen;
+    // 注意不是size_t
+    socklen_t cliLen;
     struct sockaddr_in cliAddr, servAddr;
+    int childpid;
 
-    signal(SIGCHID, sig_chld);
+    signal(SIGCHLD, sig_chld);
 
     listenfd = socket(PF_INET, SOCK_STREAM, 0);
 
@@ -48,9 +50,10 @@ int main(int argc, char *argv[]) {
 
     for(;;) {
         cliLen = sizeof(cliAddr);
-
+        printf("SERVER");
         connectfd = accept(listenfd, (SA *) &cliAddr, &cliLen);
-        if((childpid = fork()) == 0) {
+        childpid = fork();
+        if(childpid == 0) {
             close(listenfd);
             str_echo(connectfd);
             close(connectfd);
@@ -60,3 +63,7 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 }
+
+// gcc -o multiprocess_server multiprocess_server.c -lpthread
+// ./multiprocess_server &
+

@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
 
 
 // gcc -o multithreading_server multithreading_server.c -lpthread
-
+// ./multithreading_server &
 
 
 

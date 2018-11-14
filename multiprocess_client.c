@@ -1,39 +1,33 @@
 #include "unp.h"
+#include<unistd.h> 
 
-void str_cli(FILE* stdin, int socketFd){
-    char sendLine[MAXLINE], recvLine[MAXLINE];
-
-    while(fgets(sendLine, MAXLINE, stdin) != NULL){
-        write(socketFd, sendLine, sizeof(sendLine));
-
-        if(readline(socketFd, recvLine, MAXLINE) == 0){
-            err_quit("readline == 0");
-        }
-        fputs(recvLine, stdout);
-    }
-}
 
 
 int main(int argc, char **argv){
-    int socketFd;
-    struct sockaddr_in servAddr;
+    int childpid;
 
     if (argc != 3){
         err_quit("argc != 3");
     }
 
-    socketFd = socket(AF_INET, SOCK_STREAM, 0);
-
-    bzero(&servAddr, sizeof(servAddr));
-    servAddr.sin_family = AF_INET;
-    servAddr.sin_port = htons(SERV_PORT);
-    inet_pton(AF_INET, argv[1], &servAddr.sin_addr);
-
-    connect(socketFd, (SA *) &servAddr, sizeof(servAddr));
-
-    str_cli(stdin, socketFd);
-
-    exit(0);
+    for(int i = 0; i < atoi(argv[2]); i++) {
+        // int c = atoi(argv[2]);
+        // printf("c\n");
+        childpid = fork();
+        if (childpid < 0) // pid都是大于等于0的
+        { 
+            /* error occurred */
+            fprintf(stderr,"Fork Failed!");
+            exit(-1);
+        }
+        if(childpid == 0) {
+            // printf("emm\n");
+            const char *v={argv[1]};
+            execlp("/home/alchemist/single_client", v, NULL);// 在子进程中加载指定的可执行文件
+        }
+    }
+    return 0;
 }
 
-// gcc -o echo_client echo_client.c -lunp
+// gcc -o multiprocess_client multiprocess_client.c -lunp
+// ./multiprocess_client 127.0.0.1 3
