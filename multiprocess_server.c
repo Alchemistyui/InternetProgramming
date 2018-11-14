@@ -1,5 +1,6 @@
 // #include <sys/types.h>
 #include "unp.h"
+#include "string.h"
 #include <stdio.h>
 #include <time.h> 
 
@@ -17,6 +18,7 @@ void str_echo(int connectfd) {
     time_t now;
     struct tm *tm_now;
     char *datetime;
+    char buf[MAXLINE];
      
     printf("str echo!!\n");
     time(&now);
@@ -24,8 +26,32 @@ void str_echo(int connectfd) {
     datetime = asctime(tm_now);
      
     printf("now datetime: %s\n", datetime);
+    // n = read(connFd, buf, MAXLINE);
+    // buf = datetime;
+    strcpy(buf,datetime);
+    writen(connectfd, buf, MAXLINE);
      
     return ; 
+}
+
+void str_echo2(int connFd){
+    ssize_t n;
+    char buf[MAXLINE];
+
+    again:
+        while((n = read(connFd, buf, MAXLINE)) > 0){
+            writen(connFd, buf, n);
+        }
+        // EINTR错误(被中断的系统调用)
+        if(n < 0 && errno == EINTR){
+            goto again;
+        }
+        else if(n < 0){
+            // printf("read error\n");
+            // exit(1);
+            err_sys("read error");
+        }
+
 }
 
 int main(int argc, char *argv[]) {
@@ -55,12 +81,13 @@ int main(int argc, char *argv[]) {
         cliLen = sizeof(cliAddr);
         // printf("4\n");
         connectfd = accept(listenfd, (SA *) &cliAddr, &cliLen);
-        // printf("5\n");
+        printf("5\n");
         childpid = fork();
-        // printf("6\n");
+        printf("6\n");
         if(childpid == 0) {
             close(listenfd);
-            str_echo(connectfd);
+            printf("777\n");
+            str_echo2(connectfd);
             close(connectfd);
             return 0;
         }
@@ -69,6 +96,6 @@ int main(int argc, char *argv[]) {
     }
 }
 
-// gcc -o multiprocess_server multiprocess_server.c -lpthread
+// gcc -o multiprocess_server multiprocess_server.c -lunp
 // ./multiprocess_server &
 

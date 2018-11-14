@@ -3,21 +3,29 @@
 
 void str_cli(FILE* stdin, int socketFd){
     // printf("???\n");
-    printf("%d\n", socketFd);
+    
+    char recvLine[MAXLINE];
+    printf("client0\n");
+    if(readline(socketFd, recvLine, MAXLINE) == 0){
+        err_quit("readline == 0");
+    }
+    printf("client1\n");
+    fputs(recvLine, stdout);
+    printf("client2\n");
 }
 
-// void str_cli2(FILE* stdin, int socketFd){
-//     char sendLine[MAXLINE], recvLine[MAXLINE];
+void str_cli2(FILE* stdin, int socketFd){
+    char sendLine[MAXLINE], recvLine[MAXLINE];
 
-//     while(fgets(sendLine, MAXLINE, stdin) != NULL){
-//         write(socketFd, sendLine, sizeof(sendLine));
+    while(fgets(sendLine, MAXLINE, stdin) != NULL){
+        write(socketFd, sendLine, sizeof(sendLine));
 
-//         if(readline(socketFd, recvLine, MAXLINE) == 0){
-//             err_quit("readline == 0");
-//         }
-//         fputs(recvLine, stdout);
-//     }
-// }
+        if(readline(socketFd, recvLine, MAXLINE) == 0){
+            err_quit("readline == 0");
+        }
+        fputs(recvLine, stdout);
+    }
+}
 
 int main(int argc, char **argv){
     int socketFd;
@@ -29,11 +37,11 @@ int main(int argc, char **argv){
     servAddr.sin_port = htons(SERV_PORT);
     // printf("emm\n");
     // printf("%s\n", argv[0]);
-    inet_pton(AF_INET, argv[0], &servAddr.sin_addr);
+    inet_pton(AF_INET, argv[1], &servAddr.sin_addr);
     // printf("5\n");
     connect(socketFd, (SA *) &servAddr, sizeof(servAddr));
     // printf("single\n");
-    str_cli(stdin, socketFd);
+    str_cli2(stdin, socketFd);
     
 
     exit(0);
