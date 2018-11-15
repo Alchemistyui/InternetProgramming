@@ -9,7 +9,7 @@ void sig_chld(int signo) {
     int stat;
 
     while((pid = waitpid(-1, &stat, WNOHANG)) > 0) {
-        printf("child process %d exit.\n", pid);
+        printf("\n child process %d exit.\n", pid);
         return ;
     }
 }
@@ -20,13 +20,16 @@ void str_echo(int connectfd) {
     char *datetime;
     char buf[MAXLINE];
      
+
+
+
     // printf("str echo!!\n");
     time(&now);
     tm_now = localtime(&now);
     datetime = asctime(tm_now);
      
     // printf("now datetime: %s\n", datetime);
-    printf("connectfd: %d\n", connectfd);
+    // printf("connectfd: %d\n", connectfd);
     // n = read(connFd, buf, MAXLINE);
     // buf = datetime;
     strcpy(buf,datetime);
@@ -35,25 +38,7 @@ void str_echo(int connectfd) {
     return ; 
 }
 
-void str_echo2(int connFd){
-    ssize_t n;
-    char buf[MAXLINE];
 
-    again:
-        while((n = read(connFd, buf, MAXLINE)) > 0){
-            writen(connFd, buf, n);
-        }
-        // EINTR错误(被中断的系统调用)
-        if(n < 0 && errno == EINTR){
-            goto again;
-        }
-        else if(n < 0){
-            // printf("read error\n");
-            // exit(1);
-            err_sys("read error");
-        }
-
-}
 
 int main(int argc, char *argv[]) {
     // str_echo(1);
@@ -93,8 +78,8 @@ int main(int argc, char *argv[]) {
             return 0;
         }
         close(connectfd);
-        return 0;
     }
+    return 0;
 }
 
 // gcc -o multiprocess_server multiprocess_server.c -lunp

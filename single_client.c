@@ -32,14 +32,18 @@ int main(int argc, char **argv){
     int socketFd;
     struct sockaddr_in servAddr;
 
-    // printf("single\n");
+    
     socketFd = socket(AF_INET, SOCK_STREAM, 0);
     // printf("socket\n");
     bzero(&servAddr, sizeof(servAddr));
     servAddr.sin_family = AF_INET;
     servAddr.sin_port = htons(SERV_PORT);
     // printf("emm\n");
-    // printf("%s\n", argv[0]);
+    // printf("1 %s\n", argv[0]);
+    // printf("2 %s\n", argv[1]);
+    // printf("3 %s\n", argv[2]);
+    //多重的时候为0，单个为0
+    // printf("single\n");
     inet_pton(AF_INET, argv[0], &servAddr.sin_addr);
     // printf("5\n");
     connect(socketFd, (SA *) &servAddr, sizeof(servAddr));

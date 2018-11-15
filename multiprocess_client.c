@@ -21,10 +21,10 @@ int main(int argc, char **argv){
             exit(-1);
         }
         if(childpid == 0) {
-            
+            // printf("c\n");
             const char *v={argv[1]};
             execlp("/home/alchemist/single_client", v, NULL);// 在子进程中加载指定的可执行文件
-            printf("emm\n");
+            // printf("emm\n");
         }
     }
     return 0;
