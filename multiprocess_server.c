@@ -20,12 +20,13 @@ void str_echo(int connectfd) {
     char *datetime;
     char buf[MAXLINE];
      
-    printf("str echo!!\n");
+    // printf("str echo!!\n");
     time(&now);
     tm_now = localtime(&now);
     datetime = asctime(tm_now);
      
-    printf("now datetime: %s\n", datetime);
+    // printf("now datetime: %s\n", datetime);
+    printf("connectfd: %d\n", connectfd);
     // n = read(connFd, buf, MAXLINE);
     // buf = datetime;
     strcpy(buf,datetime);
@@ -81,13 +82,13 @@ int main(int argc, char *argv[]) {
         cliLen = sizeof(cliAddr);
         // printf("4\n");
         connectfd = accept(listenfd, (SA *) &cliAddr, &cliLen);
-        printf("5\n");
+        // printf("5\n");
         childpid = fork();
-        printf("6\n");
+        // printf("6\n");
         if(childpid == 0) {
             close(listenfd);
-            printf("777\n");
-            str_echo2(connectfd);
+            // printf("7\n");
+            str_echo(connectfd);
             close(connectfd);
             return 0;
         }
