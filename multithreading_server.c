@@ -1,4 +1,5 @@
 #include "unp.h"
+// #include "unpthread.h"
 #include <pthread.h>
 #include "string.h"
 #include <stdio.h>
@@ -13,17 +14,18 @@ void show_time(int sockfd) {
 
 
 
-    // printf("str echo!!\n");
+    //printf("str echo!!\n");
     time(&now);
     tm_now = localtime(&now);
     datetime = asctime(tm_now);
      
-    // printf("now datetime: %s\n", datetime);
+    
     // printf("connectfd: %d\n", connectfd);
     // n = read(connFd, buf, MAXLINE);
     // buf = datetime;
     strcpy(buf,datetime);
     writen(sockfd, buf, MAXLINE);
+    printf("now datetime: %s\n", buf);
      
     return ; 
 }
@@ -70,6 +72,8 @@ int main(int argc, char **argv) {
 
 
 // gcc -o multithreading_server multithreading_server.c -lpthread -lunp
+// gcc -o multithreading_server multithreading_server.c -pthread -lunp
+
 // ./multithreading_server &
 
 
