@@ -34,8 +34,6 @@ static void add_event(int epollfd, int fd, int state);
 static void modify_event(int epollfd, int fd, int state);
 //删除事件
 static void delete_event(int epollfd, int fd, int state);
-//close socket
-void Close(int fd);
 
 
 int main(int argc, char** argv) {
@@ -108,16 +106,94 @@ static void handle_events(int epollfd, struct epoll_event *events, int num, int 
 }
 
 static void handle_accpet(int epollfd, int listenfd) {
-    int clifd;
+    int connfd;
     struct sockaddr_in cliaddr;
     socklen_t clilen;
 
     clilen = sizeof(cliaddr);
-    clifd = accept()
+    connfd = accept(listenfd, (SA*) &cliaddr, &clilen);
+
+    printf("accept a new client: %s:%d\n", inet_ntoa(cliaddr.sin_addr), cliaddr.sin_port);
+    //添加一个客户描述符和事件
+    add_event(epollfd, clifd, EPOLLIN);
 }
 
 
+static void do_read(int epollfd, int fd, char *buf)
+{
+    int nread;
+    nread = read(fd, buf, BUFFERSIZ);
+    if (nread == -1)
+    {
+        perror("read error:");
+        //Close(fd);
+        delete_event(epollfd, fd, EPOLLIN);
+    }
+    else if (nread == 0)
+    {
+        fprintf(stderr, "client close.\n");
+        //Close(fd);
+        delete_event(epollfd, fd, EPOLLIN);
+    }
+    else
+    {
+        printf("read message is : %s", buf);
+        //修改描述符对应的事件，由读改为写
+        modify_event(epollfd, fd, EPOLLOUT);
+    }
+}
 
+static void do_write(int epollfd, int fd, char *buf)
+{
+    int nwrite;
+    nwrite = write(fd, buf, strlen(buf));
+    if (nwrite == -1)
+    {
+        perror("write error:");
+        //Close(fd);
+        delete_event(epollfd, fd, EPOLLOUT);
+    }
+    else
+        modify_event(epollfd, fd, EPOLLIN);
+    memset(buf, 0, BUFFERSIZ);
+}
+
+
+static void add_event(int epollfd, int fd, int state)
+{
+    struct epoll_event ev;
+    ev.events = state;
+    ev.data.fd = fd;
+    if((epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &ev)) == -1)
+    {
+        perror("epoll_ctl: add");
+    }
+}
+
+static void delete_event(int epollfd, int fd, int state)
+{
+    struct epoll_event ev;
+    ev.events = state;
+    ev.data.fd = fd;
+    if((epoll_ctl(epollfd, EPOLL_CTL_DEL, fd, &ev)) == -1)
+    {
+        perror("epoll_ctl: del");
+    }
+    Close(fd);    
+    // 如果描述符fd已关闭，再从epoll中删除fd，则会出现epoll failed: Bad file descriptor问题
+    // 所以要先从epoll中删除fd，在关闭fd. 具体可参考博文http://www.cnblogs.com/scw2901/p/3907657.html
+}
+
+static void modify_event(int epollfd, int fd, int state)
+{
+    struct epoll_event ev;
+    ev.events = state;
+    ev.data.fd = fd;
+    if((epoll_ctl(epollfd, EPOLL_CTL_MOD, fd, &ev)) == -1)
+    {
+        perror("epoll_ctl: mod");
+    }
+}
 
 
 
