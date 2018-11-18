@@ -22,7 +22,7 @@ static void handle_accpet(int epollfd, int listenfd) {
 
 static void do_read(int epollfd, int fd)
 {
-    int nread;
+    // int nread;
     char buf[MAXLINE];
 
     read(fd, buf, BUFFERSIZ);
@@ -30,7 +30,7 @@ static void do_read(int epollfd, int fd)
 
 static void do_write(int epollfd, int fd)
 {
-    int nwrite;
+    // int nwrite;
     char buf[MAXLINE];
 
     write(fd, buf, strlen(buf));  
