@@ -13,8 +13,8 @@
 #define PORT        9877
 #define BUFFERSIZE    1024
 #define LISTENQ     1024
-#define FDSIZE      1024
-#define EPOLLEVENTS 100
+#define FDSIZE      256
+#define EPOLLEVENTS 20
 
 //创建套接字并进行绑定
 static int socket_bind(int port);
