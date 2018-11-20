@@ -7,12 +7,19 @@
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <sys/select.h>
+#include <sys/socket.h>
 
 #define BUF_SIZE 100
 #define SERV_PORT 9877
 #define LISTENQ 10
 
 // void error_handing(char* buf);
+
+// struct sockaddr
+//  {
+//    __SOCKADDR_COMMON (sa_);   
+//    char sa_data [14];          
+//  };
 
 int main(int argc, char* argv[])
 {
@@ -34,8 +41,9 @@ int main(int argc, char* argv[])
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     servaddr.sin_port = htons(SERV_PORT);
 
-    bind(listenfd, (SA *)&servaddr, sizeof(servaddr);
-    listen(listenfd, LISTENQ)
+    // bind(listenfd, (SA *) &servaddr, sizeof(servaddr));
+    bind(listenfd,(struct sockaddr *) &servaddr, sizeof(servaddr));
+    listen(listenfd, LISTENQ);
 
     FD_ZERO(&allset);
     FD_SET(listenfd, &allset); //将服务端套接字注册入fd_set,即添加了服务器端套接字为监视对象
@@ -94,6 +102,7 @@ int main(int argc, char* argv[])
     close(listenfd);
     return 0;
 }
+
 
 // void error_handing(char* buf)
 // {

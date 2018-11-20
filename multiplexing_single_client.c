@@ -3,7 +3,7 @@
 
 void str_cli(FILE* stdin, int socketFd){
    char sendLine[MAXLINE], recvLine[MAXLINE];
-
+    // printf("client0\n");
     while(fgets(sendLine, MAXLINE, stdin) != NULL){
         write(socketFd, sendLine, sizeof(sendLine));
 
@@ -42,4 +42,5 @@ int main(int argc, char **argv){
     exit(0);
 }
 
-// gcc -o echo_client echo_client.c -lunp
+// gedit mp_single_client.c
+// gcc -o mp_single_client mp_single_client.c -lunp

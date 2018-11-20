@@ -11,17 +11,19 @@
 #include <sys/types.h>
 
 #define PORT        9877
-#define BUFFERSIZE    1024
+#define BUFFERSIZ    1024
 #define LISTENQ     1024
-#define FDSIZE      256
-#define EPOLLEVENTS 20
+#define FDSIZE      1024
+#define EPOLLEVENTS 100
 
+//函数声明
 //创建套接字并进行绑定
 static int socket_bind(int port);
 //IO多路复用epoll
 static void do_epoll(int listenfd);
 //事件处理函数
-static void handle_events(int epollfd, struct epoll_event *events, int num, int listenfd, char *buf);
+static void
+handle_events(int epollfd, struct epoll_event *events, int num, int listenfd, char *buf);
 //处理接收到的连接
 static void handle_accpet(int epollfd, int listenfd);
 //读处理
@@ -34,68 +36,74 @@ static void add_event(int epollfd, int fd, int state);
 static void modify_event(int epollfd, int fd, int state);
 //删除事件
 static void delete_event(int epollfd, int fd, int state);
+//close socket
+void Close(int fd);
 
-
-int main(int argc, char** argv) {
-    int listenfd;
+int main(int argc, char *argv[])
+{
+    int  listenfd;
     listenfd = socket_bind(PORT);
     listen(listenfd, LISTENQ);
     do_epoll(listenfd);
-    return 0;
+    exit(0);
 }
 
-static int socket_bind(int port) {
-    int listenfd;
+static int socket_bind(int port)
+{
+    int  listenfd;
     struct sockaddr_in servaddr;
-
-    listenfd = socket(PF_INET, SOCK_STREAM, 0);
-    if(listenfd == -1) {
-        err_quit("cerat socket error");
+    listenfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (listenfd == -1)
+    {
+        perror("socket error:");
         exit(1);
     }
-
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     servaddr.sin_port = htons(port);
-
-    bind(listenfd, (SA *) &servaddr, sizeof(servaddr));
-
+    if (bind(listenfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) == -1)
+    {
+        perror("bind error: ");
+        exit(1);
+    }
     return listenfd;
-
 }
 
-static void do_epoll(int listenfd) {
+static void do_epoll(int listenfd)
+{
     int epollfd;
     struct epoll_event events[EPOLLEVENTS];
-    int sum;
-    char buf[BUFFERSIZE];
-
-    // 将s所指向的某一块内存中的后n个 字节的内容全部设置为ch指定的ASCII值， 
-    // 第一个值为指定的内存地址，块的大小由第三个参数指定
-    memset(buf, 0, BUFFERSIZE);
-
-    // 创建一个epoll描述符
+    int num;
+    char buf[BUFFERSIZ];
+    memset(buf, 0, BUFFERSIZ);
+    //创建一个描述符
     epollfd = epoll_create(FDSIZE);
-    // 添加监听描述符的事件
+    //添加监听描述符事件
     add_event(epollfd, listenfd, EPOLLIN);
-
-    for (;;) {
-        if ((num = epoll_wait(epollfd, events, EPOLLEVENTS, -1)) == -1) {
-            err_quit("epoll wait error");
+    for ( ; ; )
+    {
+        //获取已经准备好的描述符事件
+        if ((num = epoll_wait(epollfd, events, EPOLLEVENTS, -1)) == -1) 
+        {
+            perror("epoll_pwait");
+            exit(1);
         }
         handle_events(epollfd, events, num, listenfd, buf);
     }
-    close(epollfd);
-
+    Close(epollfd);
 }
 
-static void handle_events(int epollfd, struct epoll_event *events, int num, int listenfd, char *buf) {
+static void
+handle_events(int epollfd, struct epoll_event *events, int num, int listenfd, char *buf)
+{
     int i;
     int fd;
-
-    for(i = 0; i<num; i++) {
-        // 根据描述符类型和事件类型进行处理
+    // 遍历
+    for (i = 0; i < num; i++)
+    {
+        fd = events[i].data.fd;
+        //根据描述符的类型和事件类型进行处理
         if ((fd == listenfd) && (events[i].events & EPOLLIN))
             handle_accpet(epollfd, listenfd);
         else if (events[i].events & EPOLLIN)
@@ -104,20 +112,21 @@ static void handle_events(int epollfd, struct epoll_event *events, int num, int 
             do_write(epollfd, fd, buf);
     }
 }
-
-static void handle_accpet(int epollfd, int listenfd) {
-    int connfd;
+static void handle_accpet(int epollfd, int listenfd)
+{
+    int clifd;
     struct sockaddr_in cliaddr;
-    socklen_t clilen;
-
-    clilen = sizeof(cliaddr);
-    connfd = accept(listenfd, (SA*) &cliaddr, &clilen);
-
-    printf("accept a new client: %s:%d\n", inet_ntoa(cliaddr.sin_addr), cliaddr.sin_port);
-    //添加一个客户描述符和事件
-    add_event(epollfd, clifd, EPOLLIN);
+    socklen_t  cliaddrlen;
+    clifd = accept(listenfd, (struct sockaddr*)&cliaddr, &cliaddrlen);
+    if (clifd == -1)
+        perror("accpet error:");
+    else
+    {
+        printf("accept a new client: %s:%d\n", inet_ntoa(cliaddr.sin_addr), cliaddr.sin_port);
+        //添加一个客户描述符和事件
+        add_event(epollfd, clifd, EPOLLIN);
+    }
 }
-
 
 static void do_read(int epollfd, int fd, char *buf)
 {
@@ -158,7 +167,6 @@ static void do_write(int epollfd, int fd, char *buf)
     memset(buf, 0, BUFFERSIZ);
 }
 
-
 static void add_event(int epollfd, int fd, int state)
 {
     struct epoll_event ev;
@@ -195,11 +203,13 @@ static void modify_event(int epollfd, int fd, int state)
     }
 }
 
+void Close(int fd)
+{
+    if((close(fd)) < 0)
+    {
+        perror("close socket error");
+        exit(1);
+    }
+}
 
-
-
-
-
-
-
-
+servepoll

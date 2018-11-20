@@ -19,16 +19,17 @@ int main(int argc, char **argv){
             /* error occurred */
             fprintf(stderr,"Fork Failed!");
             exit(-1);
-        }
+        
         if(childpid == 0) {
             // printf("c\n");
             const char *v={argv[1]};
-            execlp("/home/alchemist/multiplexing_single_client", v, NULL);// 在子进程中加载指定的可执行文件
+            execlp("/home/alchemist/mp_single_client", v, NULL);// 在子进程中加载指定的可执行文件
             // printf("emm\n");
         }
     }
     return 0;
 }
 
-// gcc -o multiprocess_client multiprocess_client.c -lunp
+// gedit multiplexing_client.c
+// gcc -o multiplexing_client multiplexing_client.c -lunp
 // ./multiprocess_client 127.0.0.1 3

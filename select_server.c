@@ -1,5 +1,5 @@
 #include "unp.h"
-#include <std.h>
+// #include <std.h>
 
 int main(int argc, char** argv) {
     int i, maxfd, maxi, connectfd, listenfd, sockfd;  
@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    servaddr.sin_port = htos(SERV_PORT);
+    servaddr.sin_port = htons(SERV_PORT);
 
     bind(listenfd,(SA *) &servaddr, sizeof(servaddr));
 
@@ -38,12 +38,13 @@ int main(int argc, char** argv) {
         if(FD_ISSET(listenfd, &rset)) {
             clilen = sizeof(cliaddr);
 
-            connectfd = accept(listenfd, (SA *) cliaddr, &clilen);
+            connectfd = accept(listenfd, (SA *) &cliaddr, &clilen);
 
             printf("new client: %s, port : %d\n", 
-                inet_ntop(AF_INET, &cliaddr.sin_addr, 4, NULL), ntohs(cliaddr.sin_port));
+                // inet_ntop(AF_INET, &cliaddr.sin_addr, 4, NULL)
+                inet_ntoa(cliaddr.sin_addr), ntohs(cliaddr.sin_port));
 
-            for(i = 0; i < FD_SETSIZE, i++) {
+            for(i = 0; i < FD_SETSIZE; i++) {
                 if(client[i] < 0) {
                     client[i] = connectfd;
                     break;
