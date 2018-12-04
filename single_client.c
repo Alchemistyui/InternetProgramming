@@ -5,7 +5,7 @@ void str_cli(FILE* stdin, int socketFd){
     // printf("???\n");
     
     char recvLine[MAXLINE];
-    printf("client0\n");
+    // printf("client0\n");
     if(readline(socketFd, recvLine, MAXLINE) == 0){
         err_quit("readline == 0");
     }

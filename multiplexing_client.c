@@ -19,7 +19,7 @@ int main(int argc, char **argv){
             /* error occurred */
             fprintf(stderr,"Fork Failed!");
             exit(-1);
-        
+        }
         if(childpid == 0) {
             // printf("c\n");
             const char *v={argv[1]};

@@ -81,6 +81,9 @@ int main(int argc, char* argv[])
                     if(maxfd < connfd)
                         maxfd = connfd;
                     printf("connected client: %d \n", connfd);
+                //     printf("new client: %s, port : %d\n", 
+                // // inet_ntop(AF_INET, &cliaddr.sin_addr, 4, NULL)
+                // inet_ntoa(cliaddr.sin_addr), ntohs(cliaddr.sin_port));
                 }
                 else    
                 {
