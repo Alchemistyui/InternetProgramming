@@ -13,23 +13,14 @@
 #define SERV_PORT 9877
 #define LISTENQ 10
 
-// void error_handing(char* buf);
-
-// struct sockaddr
-//  {
-//    __SOCKADDR_COMMON (sa_);   
-//    char sa_data [14];          
-//  };
 
 int main(int argc, char* argv[])
 {
     int listenfd, connfd;
     struct sockaddr_in servaddr, cliaddr;
-    // struct timeval timeout;
-    // fd_set reads, cpy_reads;
+
     fd_set rset, allset;
 
-    // socklen_t adr_sz;
     socklen_t clilen;
 
     int maxfd, str_len, nready, i;
@@ -41,22 +32,20 @@ int main(int argc, char* argv[])
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     servaddr.sin_port = htons(SERV_PORT);
 
-    // bind(listenfd, (SA *) &servaddr, sizeof(servaddr));
     bind(listenfd,(struct sockaddr *) &servaddr, sizeof(servaddr));
     listen(listenfd, LISTENQ);
 
     FD_ZERO(&allset);
-    FD_SET(listenfd, &allset); //将服务端套接字注册入fd_set,即添加了服务器端套接字为监视对象
+    //将服务端套接字注册入fd_set,即添加了服务器端套接字为监视对象
+    FD_SET(listenfd, &allset); 
+
     maxfd = listenfd;
 
     while(1)
     {
         rset = allset;
-        // timeout.tv_sec = 5;
-        // timeout.tv_usec = 5000;
 
         //无限循环调用select 监视可读事件
-        // if((fd_num = select(maxfd+1, &rset, 0, 0, &timeout)) == -1)
         if((nready = select(maxfd+1, &rset, NULL, NULL, NULL)) == -1)
         {
             perror("select error");
@@ -81,9 +70,7 @@ int main(int argc, char* argv[])
                     if(maxfd < connfd)
                         maxfd = connfd;
                     printf("connected client: %d \n", connfd);
-                //     printf("new client: %s, port : %d\n", 
-                // // inet_ntop(AF_INET, &cliaddr.sin_addr, 4, NULL)
-                // inet_ntoa(cliaddr.sin_addr), ntohs(cliaddr.sin_port));
+
                 }
                 else    
                 {
@@ -106,10 +93,3 @@ int main(int argc, char* argv[])
     return 0;
 }
 
-
-// void error_handing(char* buf)
-// {
-//     fputs(buf, stderr);
-//     fputc('\n', stderr);
-//     exit(1);
-// }

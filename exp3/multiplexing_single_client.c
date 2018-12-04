@@ -1,27 +1,20 @@
 #include "unp.h"
 // #include<unistd.h> 
 
-void str_cli(FILE* stdin, int socketFd){ 
-    char recvLine[MAXLINE];
+void str_cli(FILE* stdin, int socketFd){
+   char sendLine[MAXLINE], recvLine[MAXLINE];
 
-    if(readline(socketFd, recvLine, MAXLINE) == 0){
-        err_quit("readline == 0");
-    }
-    // printf("%s\n", recvLine);
-    fputs(recvLine, stdout);
-}
+    while(fgets(sendLine, MAXLINE, stdin) != NULL){
+        write(socketFd, sendLine, sizeof(sendLine));
 
-void str_cli2(FILE* stdin, int socketFd){
-    char sendLine[MAXLINE], recvLine[MAXLINE];
-    // printf("str_cli\n");
-
-    while(1){
         if(readline(socketFd, recvLine, MAXLINE) == 0){
             err_quit("readline == 0");
         }
         fputs(recvLine, stdout);
     }
 }
+
+
 
 int main(int argc, char **argv){
     int socketFd;
@@ -45,4 +38,5 @@ int main(int argc, char **argv){
     exit(0);
 }
 
-// gcc -o echo_client echo_client.c -lunp
+// gedit mp_single_client.c
+// gcc -o mp_single_client mp_single_client.c -lunp

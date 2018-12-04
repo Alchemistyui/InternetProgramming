@@ -19,19 +19,13 @@ void str_echo(int connectfd) {
     struct tm *tm_now;
     char *datetime;
     char buf[MAXLINE];
-     
 
-
-
-    // printf("str echo!!\n");
     time(&now);
     tm_now = localtime(&now);
     datetime = asctime(tm_now);
      
     // printf("now datetime: %s\n", datetime);
     // printf("connectfd: %d\n", connectfd);
-    // n = read(connFd, buf, MAXLINE);
-    // buf = datetime;
     strcpy(buf,datetime);
     writen(connectfd, buf, MAXLINE);
      
@@ -41,7 +35,6 @@ void str_echo(int connectfd) {
 
 
 int main(int argc, char *argv[]) {
-    // str_echo(1);
 
     int listenfd, connectfd;
     // 注意不是size_t
@@ -59,20 +52,18 @@ int main(int argc, char *argv[]) {
     servAddr.sin_port = htons(SERV_PORT);
 
     bind(listenfd, (SA *) &servAddr, sizeof(servAddr));
-    // printf("1\n");
+
     listen(listenfd, LISTENQ);
-    // printf("2\n");
+
     for(;;) {
-        // printf("3\n");
+
         cliLen = sizeof(cliAddr);
-        // printf("4\n");
+
         connectfd = accept(listenfd, (SA *) &cliAddr, &cliLen);
-        // printf("5\n");
         childpid = fork();
-        // printf("6\n");
+
         if(childpid == 0) {
             close(listenfd);
-            // printf("7\n");
             str_echo(connectfd);
             close(connectfd);
             return 0;

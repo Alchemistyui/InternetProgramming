@@ -38,22 +38,12 @@ int main(int argc, char *argv[])
     memset(buf, 0, BUFFERSIZ);
 
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
-    // if (listenfd == -1)
-    // {
-    //     perror("socket error:");
-    //     exit(1);
-    // }
+
     bzero(&servaddr, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     servaddr.sin_port = htons(PORT);
     bind(listenfd, (struct sockaddr*)&servaddr, sizeof(servaddr));
-    // if (bind(listenfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) == -1)
-    // {
-    //     perror("bind error: ");
-    //     exit(1);
-    // }
-
 
     listen(listenfd, LISTENQ);
 
@@ -66,12 +56,7 @@ int main(int argc, char *argv[])
     {
         //获取已经准备好的描述符事件
         num = epoll_wait(epollfd, events, EPOLLEVENTS, -1);
-        // if ((num = epoll_wait(epollfd, events, EPOLLEVENTS, -1)) == -1) 
-        // {
-        //     perror("epoll_pwait");
-        //     exit(1);
-        // }
-        // handle_events(epollfd, events, num, listenfd, buf);
+
         // 遍历
         for (i = 0; i < num; i++)
         {
@@ -79,27 +64,20 @@ int main(int argc, char *argv[])
             //根据描述符的类型和事件类型进行处理
             if ((fd == listenfd) && (events[i].events & EPOLLIN)) {
                 clifd = accept(listenfd, (struct sockaddr*)&cliaddr, &cliaddrlen);
-                // if (clifd == -1)
-                //     perror("accpet error:");
-                // else
-                // {
                     printf("accept a new client: %s:%d\n", inet_ntoa(cliaddr.sin_addr), cliaddr.sin_port);
                     //添加一个客户描述符和事件
                     add_event(epollfd, clifd, EPOLLIN);
-                // }
             }
             else if (events[i].events & EPOLLIN) {
                 nread = read(fd, buf, BUFFERSIZ);
                 if (nread == -1)
                 {
                     perror("read error:");
-                    //Close(fd);
                     delete_event(epollfd, fd, EPOLLIN);
                 }
                 else if (nread == 0)
                 {
                     fprintf(stderr, "client close.\n");
-                    //Close(fd);
                     delete_event(epollfd, fd, EPOLLIN);
                 }
                 else
@@ -114,7 +92,6 @@ int main(int argc, char *argv[])
                 if (nwrite == -1)
                 {
                     perror("write error:");
-                    //Close(fd);
                     delete_event(epollfd, fd, EPOLLOUT);
                 }
                 else
@@ -151,7 +128,7 @@ static void delete_event(int epollfd, int fd, int state)
     epoll_ctl(epollfd, EPOLL_CTL_DEL, fd, &ev);
     close(fd);    
     // 如果描述符fd已关闭，再从epoll中删除fd，则会出现epoll failed: Bad file descriptor问题
-    // 所以要先从epoll中删除fd，在关闭fd. 具体可参考博文http://www.cnblogs.com/scw2901/p/3907657.html
+    // 所以要先从epoll中删除fd，在关闭fd
 }
 
 static void modify_event(int epollfd, int fd, int state)
