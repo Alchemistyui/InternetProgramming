@@ -20,7 +20,7 @@ void str_echo(int connFd){
 
 int main(int argc, char **argv) {
     int listenFd, connFd;
-    pid_t childPid;
+    // pid_t childPid;
     socklen_t cliLen;
     struct sockaddr_in cliAddr, servAddr;
 
