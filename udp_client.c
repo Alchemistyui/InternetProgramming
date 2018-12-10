@@ -27,24 +27,25 @@ typedef struct msg {
 
 
 int main(int argc, const char *argv[]) {
-    MSG msg;
-    int sockfd;
-    struct sockaddr_in serveraddr;
-    socklen_t addrlen = sizeof(struct sockaddr);
+    MSG msg;//定义消息
+    int sockfd;//定义socket文件描述符
+    struct sockaddr_in serveraddr;//定义客户端地址
+    socklen_t addrlen = sizeof(struct sockaddr);// 地址的size，方便后面recvfrom，sendto使用
     // int maxfd;
     // fd_set infds;
-    pid_t childpid;
+    pid_t childpid;//子进程描述符
 
-    if (argc != 3){
+    if (argc != 3){//判断命令行参数个数是否符合要求，分别为：文件名，服务器地址，本程序别名
         printf("argc != 3\n");
     }
 
-    //创建套接字
+    //创建套接字，注意此处参数与tcp的不同
     if((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-        printf("fail to socket\n"); 
+        printf("fail to socket\n"); //错误处理
     }
 
-    bzero(&serveraddr, sizeof(serveraddr));
+    bzero(&serveraddr, sizeof(serveraddr));//初始化客户端地址
+    // 为客户端地址结构体赋值
     serveraddr.sin_family = AF_INET; 
     serveraddr.sin_port= htons(SERV_PORT); 
     // serveraddr.sin_addr.s_addr=htonl(INADDR_ANY); 
@@ -58,25 +59,30 @@ int main(int argc, const char *argv[]) {
     //         printf("select io error\n"); 
     //         return -1;
     //     }
-        // 发送连接的消息
-        msg.type = 'L';
-        // msg.name = argv[2];
-        strcpy(msg.name, argv[2]);
-        if(sendto(sockfd,&msg,sizeof(msg),0,(struct sockaddr *)&serveraddr,addrlen)<0)
-        {
-            printf("fail to sendto\n");
-        } 
 
+
+
+    // 因为udp不需要建立连接，直接发送登录的消息
+    msg.type = 'L';//设置消息类型为登录
+    // msg.name = argv[2];
+    strcpy(msg.name, argv[2]);//获取用户输入的字符串作为程序的别名
+    // 向服务器发送消息
+    if(sendto(sockfd,&msg,sizeof(msg),0,(struct sockaddr *)&serveraddr,addrlen)<0)
+    {//错误处理
+        printf("fail to sendto\n");
+    } 
+
+    // 循环接受和发送消息
     while(1){
-        childpid = fork();
+        childpid = fork();//创建子进程用于发信
 
         if (childpid == 0) { //在子进程内
             // 子进程负责获取终端输入内容并发送给服务器
-            char in[MAXLINE+32];
+            char in[MAXLINE+32];//定义获取终端用户输入的临时数组
             // fgets(msg.text,MAXLINE,stdin);
             // msg.text[strlen(msg.text)-1]='\0';//添加字符串结尾
 
-            fgets(in,MAXLINE,stdin);
+            fgets(in,MAXLINE,stdin);//从终端读取用户输入
             in[strlen(in)-1]='\0';//添加字符串结尾
             if(strncmp(in,"quit",4)==0)//当输入命令为退出时
             {
@@ -89,42 +95,45 @@ int main(int argc, const char *argv[]) {
                 kill(getppid(),SIGKILL); //杀死读取输入的子进程本身
                 exit(1);
             } 
-            else { //当不为退出为发送消息时
+            else { //当消息类型不为退出为发送消息时
                 // char *to = NULL;
-                char to[32];
+                char to[32];//定义读取用户输入的消息接受者名称的临时数组
                 // char delims[] = " ";
 
                 // to = strtok(msg.text, delims);//分离出目的地别名
                 // printf("%s\n", to);
                 // printf("%s\n", msg.text);
+                // 将用户的终端输入分离为目的地别名，消息内容
                 for (int i=0; i<strlen(in); i++) {
                     if(in[i]!=' ') {
-                        to[i] = in[i];
+                        to[i] = in[i];//分离出目的地别名
                     }
                     else {
                         // msg.text = strchr(in, ' ');
-                        strcpy(msg.text, strchr(in, ' ')+1);
+                        strcpy(msg.text, strchr(in, ' ')+1);//分离出消息内容
                     }
                 }
 
                 // printf("接受者 %s\n", to);
                 // printf("%s\n", msg.text);
 
-                msg.type='B'; //消息类型设为广播
+                msg.type='B'; //消息类型设为发信
                 // msg.to=to;
-                strcpy(msg.to, to);
-                strcpy(msg.name, argv[2]);
-                //发送广播消息给服务器
+                strcpy(msg.to, to);//将消息目的地赋值
+                strcpy(msg.name, argv[2]);//将消息发送者赋值
+                //发送发信消息给服务器
                 if(sendto(sockfd,&msg,sizeof(msg),0,(struct sockaddr *)&serveraddr,addrlen)<0)
-                {
+                {//错误处理
                     printf("fail to sendto\n");
                 }
             }
         }
-        // 在父进程内，父进程负责接收服务器的消息并打印
+        
         // if(memcmp(&clientaddr,&p->next->addr,sizeof(clientaddr))==0) {
 
         // }
+
+        // 在父进程内，父进程负责接收服务器的消息并打印
         recvfrom(sockfd, &msg, sizeof(msg), 0, (struct sockaddr *)&serveraddr, &addrlen); 
         // puts(msg.text);
         printf("%s\n", msg.text);
