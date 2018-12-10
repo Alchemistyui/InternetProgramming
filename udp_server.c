@@ -164,10 +164,10 @@ void send_message(int sockfd,linklist H,MSG msg,struct sockaddr_in clientaddr) {
     linklist p = H->next;// 指向第一个结点
     char s[MAXLINE+37]={0};
     // char dest[32]=msg.to;
+    printf("%s 对 %s 说: %s\n", msg.name, msg.to, msg.text);
     sprintf(s,"%s 说: %s",msg.name, msg.text); 
     strcpy(msg.text,s);
     // puts(msg.text);
-    printf("%s\n", msg.text);
     //遍历链表,寻找目的地
     while(p) {
 

@@ -107,12 +107,13 @@ int main(int argc, const char *argv[]) {
                     }
                 }
 
-                printf("%s\n", to);
-                printf("%s\n", msg.text);
+                // printf("接受者 %s\n", to);
+                // printf("%s\n", msg.text);
 
                 msg.type='B'; //消息类型设为广播
                 // msg.to=to;
                 strcpy(msg.to, to);
+                strcpy(msg.name, argv[2]);
                 //发送广播消息给服务器
                 if(sendto(sockfd,&msg,sizeof(msg),0,(struct sockaddr *)&serveraddr,addrlen)<0)
                 {
