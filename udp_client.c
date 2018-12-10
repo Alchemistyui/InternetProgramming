@@ -1,25 +1,29 @@
 #include "unp.h"
+#include <string.h>
 
 //消息的结构体,
 typedef struct msg {
+    // struct sockaddr_in toaddr; //收件客户端地址
     char type; // 消息类型,消息分为登陆、广播、退出三种，分别对应 L、B、Q
     char name[32]; // 消息来源
+    char to[32]; // 消息接受者
     char text[MAXLINE]; // 消息内容
 }MSG;
 
-//存储已连接客户端的链表 
-typedef struct node {
-    struct sockaddr_in addr; //客户端地址
-    struct node *next; //链表结点的指针
-}listnode,*linklist; //链表结点和链表
 
-//创建链表的函数
-linklist linklist_creat() {
-    linklist H; //定义一个链表
-    H=(linklist)malloc(sizeof(listnode)); //分配一个链表结点大小的空间作为头结点
-    H->next=NULL; //下一个结点指针置为空
-    return H;//返回创建的链表
-}
+// //存储已连接客户端的链表 
+// typedef struct node {
+//     struct sockaddr_in addr; //客户端地址
+//     struct node *next; //链表结点的指针
+// }listnode,*linklist; //链表结点和链表
+
+// //创建链表的函数
+// linklist linklist_creat() {
+//     linklist H; //定义一个链表
+//     H=(linklist)malloc(sizeof(listnode)); //分配一个链表结点大小的空间作为头结点
+//     H->next=NULL; //下一个结点指针置为空
+//     return H;//返回创建的链表
+// }
 
 
 int main(int argc, const char *argv[]) {
@@ -27,9 +31,13 @@ int main(int argc, const char *argv[]) {
     int sockfd;
     struct sockaddr_in serveraddr;
     socklen_t addrlen = sizeof(struct sockaddr);
-    int maxfd;
-    fd_set infds;
-    pid_t childpid;
+    // int maxfd;
+    // fd_set infds;
+    // pid_t childpid;
+
+    if (argc != 3){
+        err_quit("argc != 3");
+    }
 
     //创建套接字
     if((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
@@ -52,6 +60,7 @@ int main(int argc, const char *argv[]) {
     //     }
         // 发送连接的消息
         msg.type = 'L';
+        msg.name = argv[2];
         if(sendto(sockfd,&msg,sizeof(msg),0,(struct sockaddr *)&serveraddr,addrlen)<0)
         {
             errlog("fail to sendto");
@@ -62,6 +71,10 @@ int main(int argc, const char *argv[]) {
 
         if (childpid == 0) { //在子进程内
             // 子进程负责获取终端输入内容并发送给服务器
+            // char in[MAXLINE];
+            // fgets(msg.text,MAXLINE,stdin);
+            // msg.text[strlen(msg.text)-1]='\0';//添加字符串结尾
+
             fgets(msg.text,MAXLINE,stdin);
             msg.text[strlen(msg.text)-1]='\0';//添加字符串结尾
             if(strncmp(msg.text,"quit",4)==0)//当输入命令为退出时
@@ -72,11 +85,14 @@ int main(int argc, const char *argv[]) {
                     errlog("fail to sendto"); 
                 }
                 printf("quit !"); 
-                kill(getppid(),SIGKILL); //杀死读取输入的进程自己
+                kill(getppid(),SIGKILL); //杀死读取输入的子进程本身
                 exit(1);
             } 
             else { //当不为退出为发送消息时
+                char to[32];
+                to = strtok(msg.text, ' ');//分离出目的地别名
                 msg.type='B'; //消息类型设为广播
+                msg.to=to;
                 //发送广播消息给服务器
                 if(sendto(sockfd,&msg,sizeof(msg),0,(struct sockaddr *)&serveraddr,addrlen)<0)
                 {
@@ -85,6 +101,9 @@ int main(int argc, const char *argv[]) {
             }
         }
         // 在父进程内，父进程负责接收服务器的消息并打印
+        // if(memcmp(&clientaddr,&p->next->addr,sizeof(clientaddr))==0) {
+            
+        // }
         recvfrom(sockfd, &msg, sizeof(msg), 0, (struct sockaddr *)&serveraddr, &addrlen); 
         // puts(msg.text);
         printf("%s\n", msg.text);
