@@ -33,18 +33,18 @@ int main(int argc, const char *argv[]) {
     socklen_t addrlen = sizeof(struct sockaddr);
     // int maxfd;
     // fd_set infds;
-    // pid_t childpid;
+    pid_t childpid;
 
     if (argc != 3){
-        err_quit("argc != 3");
+        printf("argc != 3\n");
     }
 
     //创建套接字
     if((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-        errlog("fail to socket"); 
+        printf("fail to socket\n"); 
     }
 
-    bzero(&serveraddr, sizeof(servAddr));
+    bzero(&serveraddr, sizeof(serveraddr));
     serveraddr.sin_family = AF_INET; 
     serveraddr.sin_port= htons(SERV_PORT); 
     // serveraddr.sin_addr.s_addr=htonl(INADDR_ANY); 
@@ -60,10 +60,11 @@ int main(int argc, const char *argv[]) {
     //     }
         // 发送连接的消息
         msg.type = 'L';
-        msg.name = argv[2];
+        // msg.name = argv[2];
+        strcpy(msg.name, argv[2]);
         if(sendto(sockfd,&msg,sizeof(msg),0,(struct sockaddr *)&serveraddr,addrlen)<0)
         {
-            errlog("fail to sendto");
+            printf("fail to sendto\n");
         } 
 
     while(1){
@@ -71,38 +72,57 @@ int main(int argc, const char *argv[]) {
 
         if (childpid == 0) { //在子进程内
             // 子进程负责获取终端输入内容并发送给服务器
-            // char in[MAXLINE];
+            char in[MAXLINE+32];
             // fgets(msg.text,MAXLINE,stdin);
             // msg.text[strlen(msg.text)-1]='\0';//添加字符串结尾
 
-            fgets(msg.text,MAXLINE,stdin);
-            msg.text[strlen(msg.text)-1]='\0';//添加字符串结尾
-            if(strncmp(msg.text,"quit",4)==0)//当输入命令为退出时
+            fgets(in,MAXLINE,stdin);
+            in[strlen(in)-1]='\0';//添加字符串结尾
+            if(strncmp(in,"quit",4)==0)//当输入命令为退出时
             {
                 msg.type='Q'; //消息类型为退出
                 //发送退出消息至服务器
                 if(sendto(sockfd,&msg,sizeof(msg),0,(struct sockaddr *)&serveraddr,addrlen)<0) {
-                    errlog("fail to sendto"); 
+                    printf("fail to sendto\n"); 
                 }
-                printf("quit !"); 
+                // printf("quit !\n"); 
                 kill(getppid(),SIGKILL); //杀死读取输入的子进程本身
                 exit(1);
             } 
             else { //当不为退出为发送消息时
+                // char *to = NULL;
                 char to[32];
-                to = strtok(msg.text, ' ');//分离出目的地别名
+                // char delims[] = " ";
+
+                // to = strtok(msg.text, delims);//分离出目的地别名
+                // printf("%s\n", to);
+                // printf("%s\n", msg.text);
+                for (int i=0; i<strlen(in); i++) {
+                    if(in[i]!=' ') {
+                        to[i] = in[i];
+                    }
+                    else {
+                        // msg.text = strchr(in, ' ');
+                        strcpy(msg.text, strchr(in, ' ')+1);
+                    }
+                }
+
+                printf("%s\n", to);
+                printf("%s\n", msg.text);
+
                 msg.type='B'; //消息类型设为广播
-                msg.to=to;
+                // msg.to=to;
+                strcpy(msg.to, to);
                 //发送广播消息给服务器
                 if(sendto(sockfd,&msg,sizeof(msg),0,(struct sockaddr *)&serveraddr,addrlen)<0)
                 {
-                    errlog("fail to sendto");
+                    printf("fail to sendto\n");
                 }
             }
         }
         // 在父进程内，父进程负责接收服务器的消息并打印
         // if(memcmp(&clientaddr,&p->next->addr,sizeof(clientaddr))==0) {
-            
+
         // }
         recvfrom(sockfd, &msg, sizeof(msg), 0, (struct sockaddr *)&serveraddr, &addrlen); 
         // puts(msg.text);
