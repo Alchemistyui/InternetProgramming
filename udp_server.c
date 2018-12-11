@@ -4,7 +4,7 @@
 
 //感觉还需要记录收件人地址，也可采用广播然后客户端自己比对，因为发信者不好获取收信人地址
 
-//消息的结构体
+//PDU的结构体
 typedef struct msg {
     // struct sockaddr_in toaddr; //收件客户端地址
     char type; // 消息类型,消息分为登陆、发信、退出三种，分别对应 L、B、Q
@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
     MSG msg;//定义消息
     pid_t childpid;//子进程获取终端输入的内容并发送,父进程接收处理客户端的消息并发送
     struct sockaddr_in cliaddr, servaddr;//客户端和服务器的地址
-    socklen_t addrlen;// 地址的size，方便后面recvfrom使用
+    socklen_t addrlen = sizeof(struct sockaddr);// 地址的size，方便后面recvfrom使用
 
     sockfd = socket(PF_INET, SOCK_DGRAM, 0);// 创建一个监听的socket，注意此处参数与tcp的不同
 
@@ -81,7 +81,7 @@ int main(int argc, char** argv) {
         <= 0) {//错误处理
             printf("recvfrom error\n"); 
         }
-        printf("emm: %s\n", inet_ntoa(cliaddr.sin_addr));
+        // printf("emm: %s\n", inet_ntoa(cliaddr.sin_addr));
         //对不同的消息类型进处理
         if (msg.type == 'L') { //当消息类型为登录时         
             login(H, msg, cliaddr);
@@ -178,7 +178,7 @@ void send_message(int sockfd,linklist H,MSG msg,struct sockaddr_in clientaddr) {
     while(p) {
 
         // memcmp是比较内存区域buf1和buf2的前count个字节,此处用于判断结点存储的地址与消息目标地址是否相同
-        if(memcmp(&msg.to,&p->name,sizeof(clientaddr))==0) { //是发信客户端时
+        if(memcmp(&msg.to,&p->name,sizeof(clientaddr))==0) { //是接收客户端时
             //发送至目的地客户端
             // printf("%s & %s \n", msg.to, p->name);
             // printf("%s:%d \n", inet_ntoa(clientaddr.sin_addr), clientaddr.sin_port);
@@ -229,8 +229,8 @@ void logout(linklist H,struct sockaddr_in clientaddr) {
 
 
 
-// 本实验的设计采用的是自组织模式。首先，服务器和客户端分别定义了相同的消息结构体用于UDP的信息传输，
-// 在服务器端还定义了链表，用于保存在线的客户端的信息。在信息交互过程中，客户端先创建一个套接字，
+// 本实验的设计采用的是基础架构模式。首先，服务器和客户端分别定义了相同的PDU用于UDP的信息传输，
+// 在服务器端还定义了链表，用于保存在线的客户端的信息。在信息交互过程中，先启动服务器，然后客户端创建一个套接字，
 // 用于连接服务器，然后为客户端地址结构体赋值后，由于不需要connect，直接发送一个登陆的信息。
 // 在服务器端，先创建一个套接字用于交互。然后为自己的地址结构体赋值，将套接字绑定至地址后，创建一个连接链表用于维持在线客户端信息，
 // 然后进入循环接收客户端消息并进行响应的状态。若服务器接收到的是登录消息，则创建一个新的链表结点插入链表，并将此客户端的信息保存至结点中；

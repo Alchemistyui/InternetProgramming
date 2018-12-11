@@ -1,7 +1,7 @@
 #include "unp.h"
 #include <string.h>
 
-//消息的结构体,
+//PDU的结构体
 typedef struct msg {
     // struct sockaddr_in toaddr; //收件客户端地址
     char type; // 消息类型,消息分为登陆、广播、退出三种，分别对应 L、B、Q
@@ -44,8 +44,8 @@ int main(int argc, const char *argv[]) {
         printf("fail to socket\n"); //错误处理
     }
 
-    bzero(&serveraddr, sizeof(serveraddr));//初始化客户端地址
-    // 为客户端地址结构体赋值
+    bzero(&serveraddr, sizeof(serveraddr));//初始化服务器地址
+    // 为服务器地址结构体赋值
     serveraddr.sin_family = AF_INET; 
     serveraddr.sin_port= htons(SERV_PORT); 
     // serveraddr.sin_addr.s_addr=htonl(INADDR_ANY); 
