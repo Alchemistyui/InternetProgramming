@@ -6,7 +6,6 @@
 
 //PDU的结构体
 typedef struct msg {
-    // struct sockaddr_in toaddr; //收件客户端地址
     char type; // 消息类型,消息分为登陆、发信、退出三种，分别对应 L、B、Q
     char name[32]; // 消息来源别名
     char to[32]; // 消息接受者别名
@@ -72,8 +71,8 @@ int main(int argc, char** argv) {
         // }
     
 
-        // 读取消息并发送给客户端
-        linklist H=linklist_creat();//创建一个连接链表
+    // 读取消息并发送给客户端
+    linklist H=linklist_creat();//创建一个连接链表
     //循环接受请求
     for(;;) {
         // 接受客户端消息
